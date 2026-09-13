@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download crossrun</title>
+<style>
+  :root {
+    --bg: #101418;
+    --panel: #171c22;
+    --ink: #e8edf2;
+    --muted: #8b98a5;
+    --line: #262d35;
+    --accent: #4ea1ff;
+    --accent-ink: #04121f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  }
+  main {
+    width: 100%;
+    max-width: 30rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 32px;
+  }
+  h1 { margin: 0 0 6px; font-size: 1.5rem; letter-spacing: -0.01em; }
+  #status { margin: 0 0 24px; color: var(--muted); min-height: 3em; }
+  .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+    padding: 13px 16px;
+    border-radius: 9px;
+    transition: filter .15s ease;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  details { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 16px; }
+  summary { cursor: pointer; color: var(--muted); }
+  summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  ul { list-style: none; margin: 14px 0 0; padding: 0; }
+  li + li { margin-top: 4px; }
+  ul a { color: var(--accent); text-decoration: none; }
+  ul a:hover { text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+</head>
+<body>
+  <main>
+    <h1>crossrun</h1>
+    <p id="status">Detecting your operating system…</p>
+    <a id="primary" class="btn" hidden></a>
+    <details id="more">
+      <summary>All downloads</summary>
+      <ul id="all"></ul>
+    </details>
+  </main>
+
+<script>
+  const APP  = "crossrun";
+  const BASE = "https://github.com/johnwarri/1click/releases/latest/download/";
+
+  const DEFAULT = {
+    windows: `${APP}-windows-amd64.exe`,
+    macos:   `${APP}-macos-universal`,
+    linux:   `${APP}-linux-amd64`,
+  };
+
+  const ALL = [
+    `${APP}-windows-amd64.exe`,
+    `${APP}-windows-arm64.exe`,
+    `${APP}-macos-universal`,
+    `${APP}-macos-amd64`,
+    `${APP}-macos-arm64`,
+    `${APP}-linux-amd64`,
+    `${APP}-linux-arm64`,
+  ];
+
+  const LABEL = { windows: "Windows", macos: "macOS", linux: "Linux" };
+
+  function detectOS() {
+    const p  = (navigator.userAgentData?.platform || navigator.platform || "").toLowerCase();
+    const ua = navigator.userAgent;
+    if (/win/.test(p) || /windows/i.test(ua)) return "windows";
+    if (/mac/.test(p) || /macintosh|mac os x/i.test(ua)) return "macos";
+    if (/linux|x11|cros|android/.test(p) || /linux|ubuntu|fedora|debian/i.test(ua)) return "linux";
+    return null;
+  }
+
+  function startDownload(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  const list = document.getElementById("all");
+  for (const name of ALL) {
+    const li = document.createElement("li");
+    const a  = document.createElement("a");
+    a.href = BASE + name;
+    a.textContent = name;
+    li.appendChild(a);
+    list.appendChild(li);
+  }
+
+  const os      = detectOS();
+  const status  = document.getElementById("status");
+  const primary = document.getElementById("primary");
+
+  if (os) {
+    const url = BASE + DEFAULT[os];
+    status.textContent = `Your ${LABEL[os]} download should start automatically. If it doesn't, use the button below.`;
+    primary.href = url;
+    primary.textContent = `Download for ${LABEL[os]}`;
+    primary.hidden = false;
+    startDownload(url);
+  } else {
+    status.textContent = "We couldn't detect your OS. Pick your download below.";
+    document.getElementById("more").open = true;
+  }
+</script>
+</body>
+</html>
